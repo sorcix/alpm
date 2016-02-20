@@ -36,7 +36,7 @@ func (r *Repository) PackagePath(file string) string {
 func (r *Repository) Add(pkg string, sign bool, delta bool) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
-	args := []string{"-R", "-f", "-q"}
+	args := []string{"-R", "-q"}
 	if sign {
 		args = append(args, "-s", "-v")
 	}
