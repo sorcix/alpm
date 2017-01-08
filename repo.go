@@ -34,8 +34,6 @@ func (r *Repository) PackagePath(file string) string {
 }
 
 func (r *Repository) Add(pkg string, sign bool, delta bool) error {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
 	args := []string{"-R", "-q"}
 	if sign {
 		args = append(args, "-s", "-v")
@@ -43,9 +41,29 @@ func (r *Repository) Add(pkg string, sign bool, delta bool) error {
 	if delta {
 		args = append(args, "-d")
 	}
-	args = append(args, r.database, pkg)
 
-	cmd := exec.Command("repo-add", args...)
+	r.repoAction("repo-add", pkg, args)
+
+	return nil
+}
+
+func (r *Repository) Remove(pkg string, sign bool) error {
+	args := []string{"-q"}
+	if sign {
+		args = append(args, "-s", "-v")
+	}
+
+	r.repoAction("repo-remove", pkg, args)
+
+	return nil
+}
+
+func (r *Repository) repoAction(command string, pkg string, args []string) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	args = append(args, r.database, pkg)
+	cmd := exec.Command(command, args...)
 
 	if output, err := cmd.CombinedOutput(); err != nil {
 		log.Println(string(output))
